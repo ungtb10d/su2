@@ -133,8 +133,10 @@ CNumerics::ResidualType<> CUpwAUSMPLUSM_NEMO::ComputeResidual(const CConfig *con
             (u_j[iDim]-ProjVel_j*UnitNormal[iDim]);
   }
 
+  su2double kinetic_energy_i = 0.5*sq_veli; su2double kinetic_energy_j = 0.5*sq_velj;
+
   /*--- Calculate interface numerical gammas and speed of sound ---*/
-  Hnorm = 0.5*(h_i-0.5*sqVi + h_j-0.5*sqVj);
+  Hnorm = 0.5*(h_i+kinetic_energy_i-0.5*sqVi + h_j+kinetic_energy_j-0.5*sqVj);
   gtl_i = Gamma_i;
   gtl_j = Gamma_j;
   gam   = 0.5*(gtl_i+gtl_j);
