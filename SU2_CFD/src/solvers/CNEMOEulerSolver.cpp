@@ -2977,6 +2977,9 @@ void CNEMOEulerSolver::BC_Euler_Wall(CGeometry *geometry, CSolver **solver_conta
   /*--- Allocation of variables necessary for convective fluxes. ---*/
   su2double Area, ProjVelocity_i, *V_reflected, *V_domain, Normal[MAXNDIM] = {0.0}, UnitNormal[MAXNDIM] = {0.0};
 
+  conv_numerics->SetNEMOGeometry(geometry);
+  conv_numerics->SetNEMOSolution(nodes);
+
   /*--- Loop over all the vertices on this boundary marker. ---*/
 
   SU2_OMP_FOR_DYN(OMP_MIN_SIZE)
@@ -3064,6 +3067,7 @@ void CNEMOEulerSolver::BC_Euler_Wall(CGeometry *geometry, CSolver **solver_conta
       conv_numerics->SetEve   (nodes->GetEve(iPoint),    nodes->GetEve(iPoint));
       conv_numerics->SetCvve  (nodes->GetCvve(iPoint),   nodes->GetCvve(iPoint));
       conv_numerics->SetGamma (nodes->GetGamma(iPoint),  nodes->GetGamma(iPoint));
+      conv_numerics->SetPoint (iPoint, iPoint);
 
       /*--- Compute the residual using an upwind scheme. ---*/
       auto residual = conv_numerics->ComputeResidual(config);
