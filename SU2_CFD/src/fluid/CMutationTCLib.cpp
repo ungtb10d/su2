@@ -40,6 +40,15 @@ CMutationTCLib::CMutationTCLib(const CConfig* config, unsigned short val_nDim): 
   omega_vec.resize(1,0.0);
 
   /*--- Set up inputs to define type of mixture in the Mutation++ library ---*/
+     // Wall mass fractions for catalytic boundaries
+  Wall_Catalycity.resize(nSpecies,0.0);
+
+    if(nSpecies == 5)
+      Wall_Catalycity[0] = 0.00;
+      Wall_Catalycity[1] = 0.00;
+      Wall_Catalycity[2] = 0.00;
+      Wall_Catalycity[3] = 0.77;
+      Wall_Catalycity[4] = 0.23;
 
   /*--- Define transport model ---*/
   if(Kind_TransCoeffModel == WILKE)
@@ -214,4 +223,6 @@ vector<su2double>& CMutationTCLib::GetSpeciesFormationEnthalpy() {
 
    return Enthalpy_Formation;
 }
+
+ vector<su2double>& CMutationTCLib::GetWall_Catalycity() {return Wall_Catalycity;}
 #endif

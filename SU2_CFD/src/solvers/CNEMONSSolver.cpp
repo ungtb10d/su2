@@ -472,7 +472,7 @@ void CNEMONSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
   unsigned short T_INDEX, TVE_INDEX, RHOS_INDEX, RHO_INDEX;
   unsigned long iVertex, iPoint, total_index;
   su2double Wall_HeatFlux, dTdn, dTvedn, ktr, kve, pcontrol;
-  su2double rho, Ys;
+  su2double eve, hs, rho, Ys;
   su2double *Normal, Area;
   su2double *Ds, *V, *dYdn, SdYdn;
   su2double **GradV, **GradY;
@@ -539,12 +539,6 @@ void CNEMONSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
         dTvedn += GradV[TVE_INDEX][iDim]*Normal[iDim];
       }
 
-      if (catalytic) {
-        cout << "NEED TO IMPLEMENT CATALYTIC BOUNDARIES IN HEATFLUX!!!" << endl;
-        exit(1);
-      }
-      else {
-
         /*--- Rename for convenience ---*/
         rho = V[RHO_INDEX];
         Ds  = nodes->GetDiffusionCoeff(iPoint);
@@ -556,7 +550,7 @@ void CNEMONSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
           for (iDim = 0; iDim < nDim; iDim++)
             dYdn[iSpecies] += 1.0/rho * (GradV[RHOS_INDEX+iSpecies][iDim] -
                 Ys*GradV[RHO_INDEX][iDim])*Normal[iDim];
-        }
+
 
         /*--- Calculate supplementary quantities ---*/
         SdYdn = 0.0;
@@ -565,8 +559,8 @@ void CNEMONSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
 
         for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
           Ys   = V[RHOS_INDEX+iSpecies]/rho;
-          //eves = nodes->CalcEve(config, V[TVE_INDEX], iSpecies);
-          //hs   = nodes->CalcHs(config, V[T_INDEX], eves, iSpecies);
+          //eve  = nodes->GetEve(iPoint);
+          //hs   = numerics->ComputeSpeciesEnthalpy(config, V[T_INDEX], eve, iSpecies);
           //          Res_Visc[iSpecies] = -rho*Ds[iSpecies]*dYdn[iSpecies] + Ys*SdYdn;
           //          Res_Visc[nSpecies+nDim]   += Res_Visc[iSpecies]*hs;
           //          Res_Visc[nSpecies+nDim+1] += Res_Visc[iSpecies]*eves;
@@ -817,8 +811,6 @@ void CNEMONSSolver::BC_IsothermalCatalytic_Wall(CGeometry *geometry,
                                                 CConfig *config,
                                                 unsigned short val_marker) {
 
-  SU2_MPI::Error("BC_ISOTHERMAL with catalytic wall: Not operational in NEMO.", CURRENT_FUNCTION);
-
   /*--- Call standard isothermal BC to apply no-slip and energy b.c.'s ---*/
   BC_IsothermalNonCatalytic_Wall(geometry, solution_container, conv_numerics,
                                  sour_numerics, config, val_marker);
@@ -831,7 +823,6 @@ void CNEMONSSolver::BC_IsothermalCatalytic_Wall(CGeometry *geometry,
   unsigned long iVertex, iPoint, jPoint;
   su2double rho, *eves, *dTdU, *dTvedU, *Cvve, *Normal, Area, Ru, RuSI,
   dij, *Di, *Vi, *Vj, *Yj, *dYdn, SdYdn, **GradY, **dVdU;
-  const su2double *Yst;
   vector<su2double> hs, Cvtrs;
 
   /*--- Assign booleans ---*/
@@ -841,7 +832,8 @@ void CNEMONSSolver::BC_IsothermalCatalytic_Wall(CGeometry *geometry,
   //su2double pcontrol = 0.6;
 
   /*--- Get species mass fractions at the wall ---*/
-  Yst = config->GetWall_Catalycity();
+  auto& Yst = FluidModel->GetWall_Catalycity();
+
 
   /*--- Get universal information ---*/
   RuSI     = UNIVERSAL_GAS_CONSTANT;
